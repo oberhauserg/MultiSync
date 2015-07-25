@@ -6,13 +6,21 @@
 package com.NSSWare.MultiSync;
 
 import static com.NSSWare.MultiSync.TestClass.getFlow;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.JsonFactory;
+
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
+
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -27,7 +35,7 @@ import java.util.logging.Logger;
 public class GoogleDriveSyncer extends Syncer {
 
     private static GoogleAuthorizationCodeFlow flow = null;
-    private static final JacksonFactory JSON_FACTORY
+    private static final JsonFactory JSON_FACTORY
             = JacksonFactory.getDefaultInstance();
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 
@@ -46,6 +54,8 @@ public class GoogleDriveSyncer extends Syncer {
             "profile");
     
     private String accessToken;
+    
+    Drive service;
     
     private List<String> appScopes = null;
     
@@ -82,7 +92,16 @@ public class GoogleDriveSyncer extends Syncer {
                     .newTokenRequest(accessToken)
                     .setRedirectUri(REDIRECT_URI)
                     .execute();
-            accessToken = flow.createAndStoreCredential(response, null).getAccessToken();
+            Credential cred =  flow.createAndStoreCredential(response, null);
+            
+            accessToken = cred.getAccessToken();
+            
+            
+            service = new Drive.Builder(
+                HTTP_TRANSPORT, JSON_FACTORY, cred)
+                .setApplicationName("Test")
+                .build();
+            
         } 
         catch (com.google.api.client.auth.oauth2.TokenResponseException e1)
         {
@@ -101,7 +120,15 @@ public class GoogleDriveSyncer extends Syncer {
 
     @Override
     public Metadata getMetadata(String path) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+        try {
+           service.files().list().set("title", "= path");
+        } catch (IOException ex) {
+            Logger.getLogger(GoogleDriveSyncer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return null;
+    
     }
 
     @Override
@@ -111,7 +138,11 @@ public class GoogleDriveSyncer extends Syncer {
 
     @Override
     public void writeContent(String path, String content) throws SyncerException.NetworkException, SyncerException.NotSignedInException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        FileContent contents;
+        contents = new FileContent("", new File(""));
+        
+        service.files().
     }
 
     @Override

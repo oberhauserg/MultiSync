@@ -26,6 +26,7 @@ public class DropboxSyncer extends Syncer {
     DbxRequestConfig config;
 
     public DropboxSyncer(String key, String secret, String clientIdentifier) {
+        
         appKey = key;
 
         appSecret = secret;
@@ -35,6 +36,7 @@ public class DropboxSyncer extends Syncer {
     }
 
     public DropboxSyncer(String key, String secret, String token, String clientIdentifier) {
+        
         appKey = key;
 
         appSecret = secret;
